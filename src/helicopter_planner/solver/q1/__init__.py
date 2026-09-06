@@ -40,6 +40,11 @@ from .tail_elimination import (
     TailEliminationDecision,
     TailEliminationResult,
 )
+from .variable_recombination import (
+    Q1VariableFlightCountRecombinationSolver,
+    VariableRecombinationDecision,
+    VariableRecombinationResult,
+)
 
 __all__ = [
     "BaselineResult",
@@ -64,9 +69,12 @@ __all__ = [
     "Q1SingleFacilityBaselineSolver",
     "Q1TailEliminationSolver",
     "Q1ThreeRouteRecombinationSolver",
+    "Q1VariableFlightCountRecombinationSolver",
     "RecombinationDecision",
     "RecombinationResult",
     "ShuttleRoute",
     "TailEliminationDecision",
     "TailEliminationResult",
+    "VariableRecombinationDecision",
+    "VariableRecombinationResult",
 ]
