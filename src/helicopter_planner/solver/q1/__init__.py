@@ -9,6 +9,11 @@ from .count_split_recombination import (
     CountSplitResult,
     Q1ExactCountSplitPairSolver,
 )
+from .count_split_triple import (
+    CountSplitTripleDecision,
+    CountSplitTripleResult,
+    Q1ExactCountSplitTripleSolver,
+)
 from .cross_airport import (
     CrossAirportDecision,
     CrossAirportResult,
@@ -61,6 +66,8 @@ __all__ = [
     "BuiltRoute",
     "CountSplitDecision",
     "CountSplitResult",
+    "CountSplitTripleDecision",
+    "CountSplitTripleResult",
     "CrossAirportDecision",
     "CrossAirportResult",
     "FacilityDecision",
@@ -75,6 +82,7 @@ __all__ = [
     "PartialRelocateDecision",
     "PartialRelocateResult",
     "Q1ExactCountSplitPairSolver",
+    "Q1ExactCountSplitTripleSolver",
     "Q1FacilityBlockLocalSearchSolver",
     "Q1FourRouteRecombinationSolver",
     "Q1GreedyPairSavingsSolver",
