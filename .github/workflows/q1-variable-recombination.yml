@@ -1,0 +1,24 @@
+name: q1-variable-flight-count-recombination-v8
+on:
+  push:
+  pull_request:
+jobs:
+  variable-recombination:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Run tests
+        run: pytest
+      - name: Run official Q1 variable-flight-count recombination V8
+        run: python experiments/run_q1_variable_recombination.py --output-dir outputs/q1/variable_recombination_v8
+      - name: Upload variable-recombination outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: q1-variable-flight-count-recombination-v8
+          path: outputs/q1/variable_recombination_v8
+          if-no-files-found: error
