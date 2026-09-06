@@ -1,0 +1,24 @@
+name: q1-partial-relocate-v4
+on:
+  push:
+  pull_request:
+jobs:
+  partial-relocate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Run tests
+        run: pytest
+      - name: Run official Q1 partial passenger relocate V4
+        run: python experiments/run_q1_partial_relocate.py --output-dir outputs/q1/partial_relocate_v4
+      - name: Upload partial-relocate outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: q1-partial-relocate-v4
+          path: outputs/q1/partial_relocate_v4
+          if-no-files-found: error
