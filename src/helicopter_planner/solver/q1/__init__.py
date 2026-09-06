@@ -14,6 +14,11 @@ from .pair_merge import (
     PairMergeResult,
     Q1GreedyPairSavingsSolver,
 )
+from .partial_relocate import (
+    PartialRelocateDecision,
+    PartialRelocateResult,
+    Q1PartialPassengerLocalSearchSolver,
+)
 from .route_builder import BuiltRoute, Q1RouteBuilder
 from .tail_elimination import (
     Q1TailEliminationSolver,
@@ -29,8 +34,11 @@ __all__ = [
     "LocalSearchResult",
     "PairMergeDecision",
     "PairMergeResult",
+    "PartialRelocateDecision",
+    "PartialRelocateResult",
     "Q1FacilityBlockLocalSearchSolver",
     "Q1GreedyPairSavingsSolver",
+    "Q1PartialPassengerLocalSearchSolver",
     "Q1RouteBuilder",
     "Q1SingleFacilityBaselineSolver",
     "Q1TailEliminationSolver",
