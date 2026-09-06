@@ -7,7 +7,7 @@ name = "helicopter-planner"
 version = "0.1.0"
 description = "Infrastructure MVP for the offshore helicopter scheduling modeling exercise"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["ortools>=9.11,<10"]
 
 [project.optional-dependencies]
 test = ["pytest>=8.0"]
