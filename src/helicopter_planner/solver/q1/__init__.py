@@ -9,6 +9,11 @@ from .cross_airport import (
     CrossAirportResult,
     Q1LandCrossAirportLocalSearchSolver,
 )
+from .four_route_recombination import (
+    FourRouteDecision,
+    FourRouteResult,
+    Q1FourRouteRecombinationSolver,
+)
 from .generalized_tail_elimination import (
     GeneralizedTailEliminationDecision,
     GeneralizedTailEliminationResult,
@@ -52,6 +57,8 @@ __all__ = [
     "CrossAirportDecision",
     "CrossAirportResult",
     "FacilityDecision",
+    "FourRouteDecision",
+    "FourRouteResult",
     "GeneralizedTailEliminationDecision",
     "GeneralizedTailEliminationResult",
     "LocalSearchDecision",
@@ -61,6 +68,7 @@ __all__ = [
     "PartialRelocateDecision",
     "PartialRelocateResult",
     "Q1FacilityBlockLocalSearchSolver",
+    "Q1FourRouteRecombinationSolver",
     "Q1GreedyPairSavingsSolver",
     "Q1LandCrossAirportLocalSearchSolver",
     "Q1PartialPassengerLocalSearchSolver",
