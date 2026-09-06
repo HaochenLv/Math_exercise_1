@@ -84,3 +84,24 @@ The official experiment must pass all of the following:
 - export to official Q1 CSV format;
 - the independent reference validator;
 - exact metric agreement between evaluator and validator.
+
+## Official Q1 result
+
+The full 1,600-person instance was run in GitHub Actions at commit
+`110ffa458fa81e87e6152e968ce2af0df6f011e6`.
+
+| Metric | V4 start | V5 result | Change |
+|---|---:|---:|---:|
+| Total aircraft usage | 15,232 min | 14,963 min | -269 min (-1.766%) |
+| Number of flights | 94 | 89 | -5 |
+| Total passenger travel | 116,002 min | 121,120 min | +5,118 min |
+| Total fuel consumption | 123,543.4 kg | 120,158.6 kg | -3,384.8 kg |
+| Seat utilization | 48.2370% | 48.8883% | +0.6513 percentage points |
+
+The solver accepted five generalized tail eliminations. Subsequent polishing
+added five whole-block moves and two partial-relocation moves. The search
+converged, all 12 tests passed, and both the fast checker and independent
+reference validator accepted the exported solution.
+
+Compared with the original direct-shuttle baseline, V5 reduces total aircraft
+usage from 17,429 to 14,963 minutes and the flight count from 110 to 89.
