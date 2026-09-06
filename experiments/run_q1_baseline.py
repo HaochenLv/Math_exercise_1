@@ -3,8 +3,13 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import sys
 from dataclasses import asdict
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from helicopter_planner.checking.checker import check_solution
 from helicopter_planner.evaluation.metrics import evaluate_solution
@@ -37,12 +42,11 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    root = Path(__file__).resolve().parents[1]
-    distances_path = root / "data/raw/distances.csv"
-    people_path = root / "data/raw/peopleQ1.csv"
+    distances_path = ROOT / "data/raw/distances.csv"
+    people_path = ROOT / "data/raw/peopleQ1.csv"
     output_dir = args.output_dir
     if not output_dir.is_absolute():
-        output_dir = root / output_dir
+        output_dir = ROOT / output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
     problem = load_q1_problem(distances_path, people_path)
