@@ -4,6 +4,11 @@ from .baseline import (
     Q1SingleFacilityBaselineSolver,
     ShuttleRoute,
 )
+from .generalized_tail_elimination import (
+    GeneralizedTailEliminationDecision,
+    GeneralizedTailEliminationResult,
+    Q1RetypeAwareTailEliminationSolver,
+)
 from .local_search import (
     LocalSearchDecision,
     LocalSearchResult,
@@ -30,6 +35,8 @@ __all__ = [
     "BaselineResult",
     "BuiltRoute",
     "FacilityDecision",
+    "GeneralizedTailEliminationDecision",
+    "GeneralizedTailEliminationResult",
     "LocalSearchDecision",
     "LocalSearchResult",
     "PairMergeDecision",
@@ -39,6 +46,7 @@ __all__ = [
     "Q1FacilityBlockLocalSearchSolver",
     "Q1GreedyPairSavingsSolver",
     "Q1PartialPassengerLocalSearchSolver",
+    "Q1RetypeAwareTailEliminationSolver",
     "Q1RouteBuilder",
     "Q1SingleFacilityBaselineSolver",
     "Q1TailEliminationSolver",
