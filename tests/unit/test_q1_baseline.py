@@ -10,7 +10,7 @@ def test_land_allocation_uses_existing_capacity_before_opening_new_trip():
         "F001": {"A01": 100.0, "A02": 140.0, "A03": 160.0},
     }
     requests = {}
-    for i in range(15):
+    for i in range(16):
         pid = f"A01_{i:02d}"
         requests[pid] = PersonRequest(pid, "A01", "F001")
     requests["A02_00"] = PersonRequest("A02_00", "A02", "F001")
