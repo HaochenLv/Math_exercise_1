@@ -1,0 +1,26 @@
+name: q1-tail-elimination-v2
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  tail-elimination:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Run tests
+        run: pytest
+      - name: Run official Q1 tail elimination V2
+        run: python experiments/run_q1_tail_elimination.py --output-dir outputs/q1/tail_elimination_v2
+      - name: Upload tail elimination outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: q1-tail-elimination-v2
+          path: outputs/q1/tail_elimination_v2
+          if-no-files-found: error
