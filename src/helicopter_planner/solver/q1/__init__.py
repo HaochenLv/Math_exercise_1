@@ -4,6 +4,11 @@ from .baseline import (
     Q1SingleFacilityBaselineSolver,
     ShuttleRoute,
 )
+from .count_split_recombination import (
+    CountSplitDecision,
+    CountSplitResult,
+    Q1ExactCountSplitPairSolver,
+)
 from .cross_airport import (
     CrossAirportDecision,
     CrossAirportResult,
@@ -54,6 +59,8 @@ from .variable_recombination import (
 __all__ = [
     "BaselineResult",
     "BuiltRoute",
+    "CountSplitDecision",
+    "CountSplitResult",
     "CrossAirportDecision",
     "CrossAirportResult",
     "FacilityDecision",
@@ -67,6 +74,7 @@ __all__ = [
     "PairMergeResult",
     "PartialRelocateDecision",
     "PartialRelocateResult",
+    "Q1ExactCountSplitPairSolver",
     "Q1FacilityBlockLocalSearchSolver",
     "Q1FourRouteRecombinationSolver",
     "Q1GreedyPairSavingsSolver",
