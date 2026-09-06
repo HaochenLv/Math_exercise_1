@@ -1,0 +1,58 @@
+name: assemble-official-data
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/staging/**'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble and verify official CSV files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/csvs data/raw data/templates
+          cat data/staging/all_csvs.tar.xz.part* > /tmp/all_csvs.tar.xz
+          tar -xJf /tmp/all_csvs.tar.xz -C /tmp/csvs
+
+          cp /tmp/csvs/peopleQ1.csv data/raw/peopleQ1.csv
+          cp /tmp/csvs/peopleQ2.csv data/raw/peopleQ2.csv
+          cp /tmp/csvs/peopleQ3.csv data/raw/peopleQ3.csv
+          cp /tmp/csvs/q1-routes.csv data/templates/q1-routes.csv
+          cp /tmp/csvs/q1-assignments.csv data/templates/q1-assignments.csv
+          cp /tmp/csvs/q2-routes.csv data/templates/q2-routes.csv
+          cp /tmp/csvs/q2-assignments.csv data/templates/q2-assignments.csv
+          cp /tmp/csvs/q3-routes.csv data/templates/q3-routes.csv
+          cp /tmp/csvs/q3-assignments.csv data/templates/q3-assignments.csv
+
+          test "$(git hash-object data/raw/peopleQ1.csv)" = "3875d28f67ea3812e8e716368e63600d23f6a11e"
+          test "$(git hash-object data/raw/peopleQ2.csv)" = "5f6df76f5a6bba9d5de1322426946bda44ad2870"
+          test "$(git hash-object data/raw/peopleQ3.csv)" = "4aa65424cc8edd80cf58cf49eae2a67c0b4eaf2a"
+          test "$(git hash-object data/templates/q1-routes.csv)" = "f978de3e4db03a06174537eec5c66e179da4ebc0"
+          test "$(git hash-object data/templates/q1-assignments.csv)" = "76109112153b039c596547a1d563fe176f99bb05"
+          test "$(git hash-object data/templates/q2-routes.csv)" = "f978de3e4db03a06174537eec5c66e179da4ebc0"
+          test "$(git hash-object data/templates/q2-assignments.csv)" = "d0cbb9506bf7cdb82ac7a6cadbc4a5fd4e345064"
+          test "$(git hash-object data/templates/q3-routes.csv)" = "e68634611c269d3ad02630f1aee3c6f3c35094de"
+          test "$(git hash-object data/templates/q3-assignments.csv)" = "e0eae2ffa54927b79ece6fc0faab550a23352592"
+
+          test "$(wc -l < data/raw/peopleQ1.csv)" -eq 1601
+          test "$(wc -l < data/raw/peopleQ2.csv)" -eq 4001
+          test "$(wc -l < data/raw/peopleQ3.csv)" -eq 4001
+          rm -rf data/staging
+
+      - name: Commit official datasets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/raw data/templates data/staging
+          git commit -m "data: add complete official inputs and templates"
+          git push
