@@ -1,0 +1,5 @@
+aircraft_type,flight_no,stop_order,facility_id,refuel
+T2,1,0,A01,0
+T2,1,1,F006,1
+T2,1,2,F020,0
+T2,1,3,A01,0

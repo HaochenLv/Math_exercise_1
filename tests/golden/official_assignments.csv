@@ -1,0 +1,4 @@
+person_id,aircraft_type,flight_no,pickup_stop_order,delivery_stop_order
+E0001,T2,1,0,1
+E0002,T2,1,1,2
+E0003,T2,1,2,3
