@@ -10,6 +10,11 @@ from .pair_merge import (
     Q1GreedyPairSavingsSolver,
 )
 from .route_builder import BuiltRoute, Q1RouteBuilder
+from .tail_elimination import (
+    Q1TailEliminationSolver,
+    TailEliminationDecision,
+    TailEliminationResult,
+)
 
 __all__ = [
     "BaselineResult",
@@ -20,5 +25,8 @@ __all__ = [
     "Q1GreedyPairSavingsSolver",
     "Q1RouteBuilder",
     "Q1SingleFacilityBaselineSolver",
+    "Q1TailEliminationSolver",
     "ShuttleRoute",
+    "TailEliminationDecision",
+    "TailEliminationResult",
 ]
