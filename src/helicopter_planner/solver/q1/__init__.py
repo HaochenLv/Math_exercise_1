@@ -29,6 +29,11 @@ from .partial_relocate import (
     PartialRelocateResult,
     Q1PartialPassengerLocalSearchSolver,
 )
+from .recombination import (
+    Q1ThreeRouteRecombinationSolver,
+    RecombinationDecision,
+    RecombinationResult,
+)
 from .route_builder import BuiltRoute, Q1RouteBuilder
 from .tail_elimination import (
     Q1TailEliminationSolver,
@@ -58,6 +63,9 @@ __all__ = [
     "Q1RouteBuilder",
     "Q1SingleFacilityBaselineSolver",
     "Q1TailEliminationSolver",
+    "Q1ThreeRouteRecombinationSolver",
+    "RecombinationDecision",
+    "RecombinationResult",
     "ShuttleRoute",
     "TailEliminationDecision",
     "TailEliminationResult",
