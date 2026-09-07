@@ -5,6 +5,7 @@ from pathlib import Path
 
 from helicopter_planner.domain import AIRCRAFT_TYPES, PersonRequest, ProblemData
 
+
 def load_distances(path: str | Path) -> dict[str, dict[str, float]]:
     with Path(path).open(newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
@@ -19,12 +20,13 @@ def load_distances(path: str | Path) -> dict[str, dict[str, float]]:
         raise ValueError("distance matrix row/column location sets differ")
     return matrix
 
-def load_q1_requests(path: str | Path) -> dict[str, PersonRequest]:
+
+def _load_basic_requests(path: str | Path, *, label: str) -> dict[str, PersonRequest]:
     with Path(path).open(newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         expected = ["person_id", "origin_id", "destination_id"]
         if reader.fieldnames != expected:
-            raise ValueError(f"Q1 request header must be {expected}")
+            raise ValueError(f"{label} request header must be {expected}")
         requests: dict[str, PersonRequest] = {}
         for row in reader:
             req = PersonRequest(**row)
@@ -33,5 +35,26 @@ def load_q1_requests(path: str | Path) -> dict[str, PersonRequest]:
             requests[req.person_id] = req
     return requests
 
+
+def load_q1_requests(path: str | Path) -> dict[str, PersonRequest]:
+    return _load_basic_requests(path, label="Q1")
+
+
+def load_q2_requests(path: str | Path) -> dict[str, PersonRequest]:
+    return _load_basic_requests(path, label="Q2")
+
+
 def load_q1_problem(distances_path: str | Path, people_path: str | Path) -> ProblemData:
-    return ProblemData(distances=load_distances(distances_path), requests=load_q1_requests(people_path), aircraft_types=AIRCRAFT_TYPES)
+    return ProblemData(
+        distances=load_distances(distances_path),
+        requests=load_q1_requests(people_path),
+        aircraft_types=AIRCRAFT_TYPES,
+    )
+
+
+def load_q2_problem(distances_path: str | Path, people_path: str | Path) -> ProblemData:
+    return ProblemData(
+        distances=load_distances(distances_path),
+        requests=load_q2_requests(people_path),
+        aircraft_types=AIRCRAFT_TYPES,
+    )
