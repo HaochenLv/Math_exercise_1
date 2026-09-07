@@ -5,6 +5,14 @@ from .warm_start import (
     build_onboard_trace,
     classify_q2_request,
 )
+from .tail_elimination import (
+    Q2PassengerSetRouteOptimizer,
+    Q2ResidualTailEliminationResult,
+    Q2ResidualTailEliminationSolver,
+    SingleRoutePolishDecision,
+    TailEliminationDecision,
+    TailRecipientDecision,
+)
 
 __all__ = [
     "PackingOption",
@@ -12,4 +20,10 @@ __all__ = [
     "WarmStartPackingResult",
     "build_onboard_trace",
     "classify_q2_request",
+    "Q2PassengerSetRouteOptimizer",
+    "Q2ResidualTailEliminationResult",
+    "Q2ResidualTailEliminationSolver",
+    "SingleRoutePolishDecision",
+    "TailEliminationDecision",
+    "TailRecipientDecision",
 ]
