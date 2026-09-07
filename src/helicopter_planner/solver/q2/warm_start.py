@@ -16,10 +16,12 @@ from helicopter_planner.evaluation.metrics import (
     stop_minutes,
 )
 
+RequestKey = tuple[str, str]
+
 
 @dataclass(frozen=True)
 class PackingOption:
-    person_id: str
+    request_key: RequestKey
     flight_uid: str
     pickup_index: int
     delivery_index: int
@@ -47,9 +49,7 @@ class WarmStartPackingResult:
 
 def classify_q2_request(request: PersonRequest) -> str:
     origin_land = request.origin_id == "LAND" or request.origin_id in AIRPORTS
-    destination_land = (
-        request.destination_id == "LAND" or request.destination_id in AIRPORTS
-    )
+    destination_land = request.destination_id == "LAND" or request.destination_id in AIRPORTS
     if origin_land and not destination_land:
         return "outbound"
     if not origin_land and destination_land:
@@ -91,9 +91,7 @@ def build_onboard_trace(problem: ProblemData, solution: Solution) -> list[dict[s
             onboard_before = leg_loads[stop_index - 1] if stop_index > 0 else 0
             dropoffs = sum(a.delivery_index == stop_index for a in assignments)
             pickups = sum(a.pickup_index == stop_index for a in assignments)
-            onboard_after = (
-                leg_loads[stop_index] if stop_index < len(leg_loads) else 0
-            )
+            onboard_after = leg_loads[stop_index] if stop_index < len(leg_loads) else 0
             if onboard_after != onboard_before - dropoffs + pickups:
                 raise AssertionError(
                     f"{uid} stop {stop_index}: load accounting mismatch "
@@ -101,8 +99,7 @@ def build_onboard_trace(problem: ProblemData, solution: Solution) -> list[dict[s
                 )
             if onboard_after > capacity:
                 raise AssertionError(
-                    f"{uid} stop {stop_index}: capacity exceeded "
-                    f"{onboard_after}>{capacity}"
+                    f"{uid} stop {stop_index}: capacity exceeded {onboard_after}>{capacity}"
                 )
             rows.append(
                 {
@@ -122,75 +119,66 @@ def build_onboard_trace(problem: ProblemData, solution: Solution) -> list[dict[s
 
 
 class Q2WarmStartPacker:
-    """Q2 B0A: pack extra Q2 requests into a fixed Q1 route skeleton.
+    """Q2 B0A: exact zero-aircraft-cost packing on a frozen Q1 skeleton.
 
-    The Q1 flights, aircraft types, sea-stop order, and refuel decisions are
-    frozen. Only assignments for Q2 requests not already present in the Q1
-    solution may be added. Therefore every accepted passenger has zero
-    incremental aircraft time, distance, fuel, and flight count.
-
-    Phase 1 maximizes the number of newly packed passengers globally under
-    per-leg seat capacities. Phase 2 fixes that maximum count and minimizes
-    added passenger travel time.
+    Requests with the same exact (origin_id, destination_id) are symmetric in
+    Q2.  The CP model therefore uses one bounded integer variable per OD-group
+    / route-option rather than one Boolean variable per person / route-option.
+    This symmetry reduction is exact and makes max-cardinality optimality much
+    easier to prove.  Individual person IDs are expanded deterministically only
+    after the aggregate optimum is known.
     """
 
-    def __init__(
-        self,
-        *,
-        max_time_seconds: float = 30.0,
-        random_seed: int = 0,
-    ) -> None:
+    def __init__(self, *, max_time_seconds: float = 30.0, random_seed: int = 0) -> None:
         self.max_time_seconds = max_time_seconds
         self.random_seed = random_seed
 
-    def pack(
-        self,
-        problem: ProblemData,
-        q1_solution: Solution,
-    ) -> WarmStartPackingResult:
+    def pack(self, problem: ProblemData, q1_solution: Solution) -> WarmStartPackingResult:
         solution = copy.deepcopy(q1_solution)
         unknown = sorted(set(solution.assignments) - set(problem.requests))
         if unknown:
             raise ValueError(
-                "Q1 warm-start contains passengers absent from Q2: "
-                + ", ".join(unknown[:10])
+                "Q1 warm-start contains passengers absent from Q2: " + ", ".join(unknown[:10])
             )
 
-        starting_check = check_solution(
-            problem, solution, require_all_requests=False
-        )
+        starting_check = check_solution(problem, solution, require_all_requests=False)
         if not starting_check.ok:
             raise ValueError(
-                "Q1 warm-start is not a valid partial Q2 solution:\n"
-                + "\n".join(starting_check.errors)
+                "Q1 warm-start is not a valid partial Q2 solution:\n" + "\n".join(starting_check.errors)
             )
 
         starting_metrics = evaluate_solution(problem, solution)
-        base_loads = {
-            uid: _leg_loads(solution, uid) for uid in solution.flights
-        }
+        base_loads = {uid: _leg_loads(solution, uid) for uid in solution.flights}
         extra_ids = sorted(set(problem.requests) - set(solution.assignments))
 
+        groups: dict[RequestKey, list[str]] = defaultdict(list)
+        for person_id in extra_ids:
+            req = problem.requests[person_id]
+            groups[(req.origin_id, req.destination_id)].append(person_id)
+
         options: list[PackingOption] = []
-        options_by_person: dict[str, list[int]] = defaultdict(list)
+        options_by_group: dict[RequestKey, list[int]] = defaultdict(list)
         options_by_flight_leg: dict[tuple[str, int], list[int]] = defaultdict(list)
 
-        for person_id in extra_ids:
-            request = problem.requests[person_id]
-            for option in self._candidate_options(problem, solution, request):
+        for key in sorted(groups):
+            representative = problem.requests[groups[key][0]]
+            for option in self._candidate_options(problem, solution, representative, key):
                 option_index = len(options)
                 options.append(option)
-                options_by_person[person_id].append(option_index)
+                options_by_group[key].append(option_index)
                 for leg in option.covered_legs:
-                    options_by_flight_leg[(option.flight_uid, leg)].append(
-                        option_index
-                    )
+                    options_by_flight_leg[(option.flight_uid, leg)].append(option_index)
+
+        candidate_options_by_person: dict[str, int] = {}
+        for key, person_ids in groups.items():
+            option_count = len(options_by_group.get(key, []))
+            if option_count:
+                for person_id in person_ids:
+                    candidate_options_by_person[person_id] = option_count
 
         if not options:
             metrics = evaluate_solution(problem, solution)
-            remaining = Counter(
-                classify_q2_request(problem.requests[pid]) for pid in extra_ids
-            )
+            remaining = Counter(classify_q2_request(problem.requests[pid]) for pid in extra_ids)
             return WarmStartPackingResult(
                 solution=solution,
                 starting_metrics=starting_metrics,
@@ -206,23 +194,22 @@ class Q2WarmStartPacker:
             )
 
         model = cp_model.CpModel()
-        variables = [
-            model.new_bool_var(f"x_{index}") for index in range(len(options))
-        ]
+        variables: list[cp_model.IntVar] = []
+        for index, option in enumerate(options):
+            demand = len(groups[option.request_key])
+            variables.append(model.new_int_var(0, demand, f"y_{index}"))
 
-        for person_id, indices in options_by_person.items():
-            model.add(sum(variables[i] for i in indices) <= 1)
+        for key, indices in options_by_group.items():
+            model.add(sum(variables[i] for i in indices) <= len(groups[key]))
 
         for uid, flight in solution.flights.items():
             capacity = problem.aircraft_types[flight.aircraft_type].seats
             for leg, base_load in enumerate(base_loads[uid]):
                 candidate_indices = options_by_flight_leg.get((uid, leg), [])
-                if not candidate_indices:
-                    continue
-                model.add(
-                    base_load + sum(variables[i] for i in candidate_indices)
-                    <= capacity
-                )
+                if candidate_indices:
+                    model.add(
+                        base_load + sum(variables[i] for i in candidate_indices) <= capacity
+                    )
 
         served_expr = sum(variables)
         model.maximize(served_expr)
@@ -230,7 +217,7 @@ class Q2WarmStartPacker:
         status = solver.solve(model)
         if status != cp_model.OPTIMAL:
             raise RuntimeError(
-                "Q2 B0A max-cardinality packing was not proven optimal: "
+                "Q2 B0A grouped max-cardinality packing was not proven optimal: "
                 + self._status_name(status)
             )
         max_served = int(round(solver.objective_value))
@@ -246,37 +233,52 @@ class Q2WarmStartPacker:
         status = solver.solve(model)
         if status != cp_model.OPTIMAL:
             raise RuntimeError(
-                "Q2 B0A travel-time tie-break was not proven optimal: "
+                "Q2 B0A grouped travel-time tie-break was not proven optimal: "
                 + self._status_name(status)
             )
 
-        selected = [
-            options[index]
-            for index, variable in enumerate(variables)
-            if solver.value(variable)
-        ]
-        for option in selected:
-            solution.assignments[option.person_id] = Assignment(
-                person_id=option.person_id,
-                flight_uid=option.flight_uid,
-                pickup_index=option.pickup_index,
-                delivery_index=option.delivery_index,
-            )
+        # Expand aggregate OD-group counts into concrete person IDs.  Requests
+        # inside a group are fully interchangeable in Q2, so this preserves the
+        # exact aggregate optimum.
+        chosen_by_group: dict[RequestKey, list[tuple[PackingOption, int]]] = defaultdict(list)
+        for index, option in enumerate(options):
+            count = int(solver.value(variables[index]))
+            if count:
+                chosen_by_group[option.request_key].append((option, count))
 
-        final_check = check_solution(
-            problem, solution, require_all_requests=False
-        )
+        packed_ids: set[str] = set()
+        for key in sorted(chosen_by_group):
+            available_ids = iter(sorted(groups[key]))
+            chosen = sorted(
+                chosen_by_group[key],
+                key=lambda pair: (
+                    pair[0].passenger_travel_minutes,
+                    pair[0].flight_uid,
+                    pair[0].pickup_index,
+                    pair[0].delivery_index,
+                ),
+            )
+            for option, count in chosen:
+                for _ in range(count):
+                    person_id = next(available_ids)
+                    solution.assignments[person_id] = Assignment(
+                        person_id=person_id,
+                        flight_uid=option.flight_uid,
+                        pickup_index=option.pickup_index,
+                        delivery_index=option.delivery_index,
+                    )
+                    packed_ids.add(person_id)
+
+        final_check = check_solution(problem, solution, require_all_requests=False)
         if not final_check.ok:
             raise AssertionError(
-                "Q2 B0A produced an invalid partial solution:\n"
-                + "\n".join(final_check.errors)
+                "Q2 B0A produced an invalid partial solution:\n" + "\n".join(final_check.errors)
             )
 
         metrics = evaluate_solution(problem, solution)
         self._assert_zero_aircraft_cost(starting_metrics, metrics)
         build_onboard_trace(problem, solution)
 
-        packed_ids = {option.person_id for option in selected}
         packed_by_kind = Counter(
             classify_q2_request(problem.requests[pid]) for pid in packed_ids
         )
@@ -291,15 +293,12 @@ class Q2WarmStartPacker:
             starting_metrics=starting_metrics,
             metrics=metrics,
             extra_request_count=len(extra_ids),
-            candidate_request_count=len(options_by_person),
+            candidate_request_count=len(candidate_options_by_person),
             candidate_option_count=len(options),
-            packed_extra_count=len(selected),
+            packed_extra_count=len(packed_ids),
             packed_by_kind=dict(sorted(packed_by_kind.items())),
             remaining_by_kind=dict(sorted(remaining_by_kind.items())),
-            candidate_options_by_person={
-                pid: len(indices)
-                for pid, indices in sorted(options_by_person.items())
-            },
+            candidate_options_by_person=candidate_options_by_person,
             cp_status=self._status_name(status),
         )
 
@@ -326,16 +325,13 @@ class Q2WarmStartPacker:
         problem: ProblemData,
         solution: Solution,
         request: PersonRequest,
+        key: RequestKey,
     ) -> Iterable[PackingOption]:
         for uid in sorted(solution.flights):
             flight = solution.flights[uid]
             route = flight.full_route()
-            expected_origin = _actual_endpoint(
-                request.origin_id, flight.base_airport
-            )
-            expected_destination = _actual_endpoint(
-                request.destination_id, flight.base_airport
-            )
+            expected_origin = _actual_endpoint(request.origin_id, flight.base_airport)
+            expected_destination = _actual_endpoint(request.destination_id, flight.base_airport)
 
             for pickup_index, location in enumerate(route[:-1]):
                 if location != expected_origin:
@@ -348,15 +344,12 @@ class Q2WarmStartPacker:
                 if delivery_index is None:
                     continue
                 yield PackingOption(
-                    person_id=request.person_id,
+                    request_key=key,
                     flight_uid=uid,
                     pickup_index=pickup_index,
                     delivery_index=delivery_index,
                     passenger_travel_minutes=self._passenger_minutes(
-                        problem,
-                        flight,
-                        pickup_index,
-                        delivery_index,
+                        problem, flight, pickup_index, delivery_index
                     ),
                 )
 
@@ -379,18 +372,9 @@ class Q2WarmStartPacker:
         )
 
     @staticmethod
-    def _assert_zero_aircraft_cost(
-        start: SolutionMetrics,
-        end: SolutionMetrics,
-    ) -> None:
-        exact_fields = (
-            "total_aircraft_usage_minutes",
-            "number_of_flights",
-        )
-        float_fields = (
-            "total_fuel_consumption_kg",
-            "available_seat_km",
-        )
+    def _assert_zero_aircraft_cost(start: SolutionMetrics, end: SolutionMetrics) -> None:
+        exact_fields = ("total_aircraft_usage_minutes", "number_of_flights")
+        float_fields = ("total_fuel_consumption_kg", "available_seat_km")
         for field in exact_fields:
             if getattr(start, field) != getattr(end, field):
                 raise AssertionError(
