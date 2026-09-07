@@ -1,0 +1,29 @@
+name: q2-residual-analysis
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  residual-analysis:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Test
+        run: pytest
+      - name: Analyze Q2 B0A residual demand
+        run: |
+          python experiments/analyze_q2_b0a_residual.py \
+            --output-dir outputs/q2/residual_analysis \
+            --packing-time-limit 30
+      - name: Upload residual diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: q2-residual-analysis
+          path: outputs/q2/residual_analysis
