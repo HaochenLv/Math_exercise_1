@@ -13,6 +13,11 @@ from .tail_elimination import (
     TailEliminationDecision,
     TailRecipientDecision,
 )
+from .partial_relocate import (
+    PartialRelocationDecision,
+    Q2PartialPassengerRelocationSolver,
+    Q2PartialRelocationResult,
+)
 
 __all__ = [
     "PackingOption",
@@ -26,4 +31,7 @@ __all__ = [
     "SingleRoutePolishDecision",
     "TailEliminationDecision",
     "TailRecipientDecision",
+    "PartialRelocationDecision",
+    "Q2PartialPassengerRelocationSolver",
+    "Q2PartialRelocationResult",
 ]
