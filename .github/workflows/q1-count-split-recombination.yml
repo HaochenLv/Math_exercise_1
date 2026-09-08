@@ -1,7 +1,6 @@
 name: q1-exact-count-split-recombination-v10
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 jobs:
   count-split-recombination:
     runs-on: ubuntu-latest

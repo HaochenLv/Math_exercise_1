@@ -1,7 +1,6 @@
 name: q2-b1-tail-elimination
 
 on:
-  push:
   workflow_dispatch:
 
 permissions:

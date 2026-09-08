@@ -1,7 +1,6 @@
 name: q1-exact-count-split-triple-v11
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 jobs:
   count-split-triple:
     runs-on: ubuntu-latest

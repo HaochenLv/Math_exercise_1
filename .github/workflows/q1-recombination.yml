@@ -1,7 +1,6 @@
 name: q1-three-route-recombination-v7
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 jobs:
   recombination:
     runs-on: ubuntu-latest

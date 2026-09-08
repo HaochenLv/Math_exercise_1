@@ -1,7 +1,6 @@
 name: q1-four-route-recombination-v9
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 jobs:
   four-route-recombination:
     runs-on: ubuntu-latest

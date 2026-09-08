@@ -1,7 +1,6 @@
 name: q1-generalized-tail-elimination-v5
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 jobs:
   generalized-tail-elimination:
     runs-on: ubuntu-latest

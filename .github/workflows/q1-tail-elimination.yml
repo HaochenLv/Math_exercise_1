@@ -1,7 +1,6 @@
 name: q1-tail-elimination-v2
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:

@@ -1,7 +1,6 @@
 name: q1-local-search-v3
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 jobs:
   local-search:
     runs-on: ubuntu-latest

@@ -1,13 +1,6 @@
 name: q2-b3-pair-recombination
 
 on:
-  push:
-    paths:
-      - "src/helicopter_planner/solver/q2/pair_recombination.py"
-      - "src/helicopter_planner/solver/q2/__init__.py"
-      - "tests/test_q2_pair_recombination.py"
-      - "experiments/run_q2_b3_pair_recombination.py"
-      - ".github/workflows/q2-b3.yml"
   workflow_dispatch:
 
 permissions:

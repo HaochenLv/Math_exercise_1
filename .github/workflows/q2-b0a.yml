@@ -1,7 +1,6 @@
 name: q2-b0a-warm-start
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:

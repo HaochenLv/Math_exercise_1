@@ -1,7 +1,6 @@
 name: q1-partial-relocate-v4
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 jobs:
   partial-relocate:
     runs-on: ubuntu-latest

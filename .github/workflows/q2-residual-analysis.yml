@@ -1,7 +1,6 @@
 name: q2-residual-analysis
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:

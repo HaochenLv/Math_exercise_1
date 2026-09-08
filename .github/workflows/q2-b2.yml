@@ -1,7 +1,6 @@
 name: q2-b2-partial-relocation
 
 on:
-  push:
   workflow_dispatch:
 
 permissions:

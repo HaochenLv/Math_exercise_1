@@ -2,15 +2,6 @@ name: q1-baseline
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "data/raw/distances.csv"
-      - "data/raw/peopleQ1.csv"
-      - "src/helicopter_planner/**"
-      - "reference_validator/**"
-      - "experiments/run_q1_baseline.py"
-      - "tests/**"
-      - ".github/workflows/q1-baseline.yml"
 
 jobs:
   baseline:

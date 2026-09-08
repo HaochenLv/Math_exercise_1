@@ -1,7 +1,6 @@
 name: q2-b0b-residual-baseline
 
 on:
-  push:
   workflow_dispatch:
 
 permissions:
