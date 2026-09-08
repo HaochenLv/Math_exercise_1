@@ -18,6 +18,12 @@ from .partial_relocate import (
     Q2PartialPassengerRelocationSolver,
     Q2PartialRelocationResult,
 )
+from .pair_recombination import (
+    PairIterationDiagnostics,
+    PairRecombinationDecision,
+    Q2ExactPairRecombinationSolver,
+    Q2PairRecombinationResult,
+)
 
 __all__ = [
     "PackingOption",
@@ -34,4 +40,8 @@ __all__ = [
     "PartialRelocationDecision",
     "Q2PartialPassengerRelocationSolver",
     "Q2PartialRelocationResult",
+    "PairIterationDiagnostics",
+    "PairRecombinationDecision",
+    "Q2ExactPairRecombinationSolver",
+    "Q2PairRecombinationResult",
 ]

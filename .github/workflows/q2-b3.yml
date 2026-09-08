@@ -1,0 +1,55 @@
+name: q2-b3-pair-recombination
+
+on:
+  push:
+    paths:
+      - "src/helicopter_planner/solver/q2/pair_recombination.py"
+      - "src/helicopter_planner/solver/q2/__init__.py"
+      - "tests/test_q2_pair_recombination.py"
+      - "experiments/run_q2_b3_pair_recombination.py"
+      - ".github/workflows/q2-b3.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  b3:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Test
+        run: pytest
+      - name: Download frozen Q1 V10 anchor
+        uses: actions/download-artifact@v4
+        with:
+          name: q1-exact-count-split-recombination-v10
+          path: inputs/q1_v10_anchor
+          github-token: ${{ github.token }}
+          repository: HaochenLv/Math_exercise_1
+          run-id: 34131373295
+      - name: Run Q2 B3A exact residual pair recombination
+        run: |
+          python experiments/run_q2_b3_pair_recombination.py \
+            --q1-routes inputs/q1_v10_anchor/q1-routes.csv \
+            --q1-assignments inputs/q1_v10_anchor/q1-assignments.csv \
+            --output-dir outputs/q2/b3_pair_recombination \
+            --packing-time-limit 30 \
+            --neighbor-count 8 \
+            --max-union-facilities 6 \
+            --cp-time-limit 0.75 \
+            --max-iterations 12 \
+            --tail-max-hosts-per-donor 32
+      - name: Upload B3 outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: q2-b3-pair-recombination
+          path: outputs/q2/b3_pair_recombination
+          if-no-files-found: error
