@@ -1,11 +1,6 @@
 name: q2-b3b-residual-main-recombination
 
 on:
-  push:
-    paths:
-      - "src/helicopter_planner/solver/q2/residual_main_recombination.py"
-      - "experiments/run_q2_b3b_residual_main.py"
-      - ".github/workflows/q2-b3b.yml"
   workflow_dispatch:
 
 permissions:
