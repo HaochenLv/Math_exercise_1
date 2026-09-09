@@ -1,0 +1,50 @@
+name: q2-c3-identity-free-allflight-pair
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "experiments/run_q2_c3_allflight_pair.py"
+      - ".github/workflows/q2-c3.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  c3:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Test
+        run: pytest
+      - name: Download frozen Q2 19126 anchor
+        uses: actions/download-artifact@v4
+        with:
+          name: q2-b3b-residual-main-recombination-extended
+          path: inputs/q2_19126_anchor
+          github-token: ${{ github.token }}
+          repository: HaochenLv/Math_exercise_1
+          run-id: 34323902740
+      - name: Run Q2 C3 identity-free all-flight exact pair sweep
+        run: |
+          python experiments/run_q2_c3_allflight_pair.py \
+            --anchor-routes inputs/q2_19126_anchor/q2-routes.csv \
+            --anchor-assignments inputs/q2_19126_anchor/q2-assignments.csv \
+            --output-dir outputs/q2/c3_allflight_pair \
+            --neighbor-count 6 \
+            --max-union-facilities 7 \
+            --cp-time-limit 1.0 \
+            --max-iterations 8
+      - name: Upload C3 outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: q2-c3-identity-free-allflight-pair
+          path: outputs/q2/c3_allflight_pair
+          if-no-files-found: error
