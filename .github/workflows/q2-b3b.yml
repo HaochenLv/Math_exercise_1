@@ -1,9 +1,6 @@
 name: q2-b3b-residual-main-recombination
 
 on:
-  push:
-    paths:
-      - ".github/workflows/q2-b3b.yml"
   workflow_dispatch:
 
 permissions:
