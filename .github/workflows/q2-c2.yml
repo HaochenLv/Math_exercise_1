@@ -1,0 +1,46 @@
+name: q2-c2-f044-f037-regional-rebuild
+
+on:
+  push:
+    paths:
+      - "experiments/run_q2_c2_f044_f037_rebuild.py"
+      - ".github/workflows/q2-c2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  c2:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Test
+        run: pytest
+      - name: Download frozen Q2 19126 anchor
+        uses: actions/download-artifact@v4
+        with:
+          name: q2-b3b-residual-main-recombination-extended
+          path: inputs/q2_19126_anchor
+          github-token: ${{ github.token }}
+          repository: HaochenLv/Math_exercise_1
+          run-id: 34323902740
+      - name: Run Q2 C2 regional rebuild
+        run: |
+          python experiments/run_q2_c2_f044_f037_rebuild.py \
+            --anchor-routes inputs/q2_19126_anchor/q2-routes.csv \
+            --anchor-assignments inputs/q2_19126_anchor/q2-assignments.csv \
+            --output-dir outputs/q2/c2_f044_f037
+      - name: Upload C2 outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: q2-c2-f044-f037-regional-rebuild
+          path: outputs/q2/c2_f044_f037
+          if-no-files-found: error
