@@ -1,0 +1,86 @@
+name: q2-c7-global-master-sprint
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/q2-c7.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  c7:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tag: compact18a
+            cluster_budget: 18
+            max_routes: 1900
+            time_limit: 240
+            seed: 17
+          - tag: compact18b
+            cluster_budget: 18
+            max_routes: 2200
+            time_limit: 240
+            seed: 73
+          - tag: compact22a
+            cluster_budget: 22
+            max_routes: 2400
+            time_limit: 240
+            seed: 131
+          - tag: compact24a
+            cluster_budget: 24
+            max_routes: 2600
+            time_limit: 240
+            seed: 197
+          - tag: medium26a
+            cluster_budget: 26
+            max_routes: 3000
+            time_limit: 240
+            seed: 257
+          - tag: compact20long
+            cluster_budget: 20
+            max_routes: 2200
+            time_limit: 360
+            seed: 311
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Test
+        run: pytest
+      - name: Download Q2 C6 18149 anchor
+        uses: actions/download-artifact@v4
+        with:
+          name: q2-c6-compact
+          path: inputs/q2_18149_anchor
+          github-token: ${{ github.token }}
+          repository: HaochenLv/Math_exercise_1
+          run-id: 34360476053
+      - name: Run C7 global master ${{ matrix.tag }}
+        run: |
+          python experiments/run_q2_c6_global_route_pool.py \
+            --anchor-routes inputs/q2_18149_anchor/q2-routes.csv \
+            --anchor-assignments inputs/q2_18149_anchor/q2-assignments.csv \
+            --output-dir outputs/q2/c7_${{ matrix.tag }} \
+            --cluster-budget ${{ matrix.cluster_budget }} \
+            --max-routes ${{ matrix.max_routes }} \
+            --master-time-limit ${{ matrix.time_limit }} \
+            --max-copies 25 \
+            --seed ${{ matrix.seed }} \
+            --expected-anchor-minutes 18149 \
+            --expected-anchor-flights 101
+      - name: Upload C7 ${{ matrix.tag }} outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: q2-c7-${{ matrix.tag }}
+          path: outputs/q2/c7_${{ matrix.tag }}
+          if-no-files-found: error
