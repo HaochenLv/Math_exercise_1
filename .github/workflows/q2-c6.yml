@@ -1,0 +1,67 @@
+name: q2-c6-global-route-pool-master
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "experiments/run_q2_c6_global_route_pool.py"
+      - ".github/workflows/q2-c6.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  c6:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: compact
+            cluster_budget: 18
+            max_routes: 2200
+            master_time: 75
+            seed: 101
+          - label: broad
+            cluster_budget: 32
+            max_routes: 4200
+            master_time: 150
+            seed: 211
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Test
+        run: pytest
+      - name: Download Q2 C5 shared5 18606 anchor
+        uses: actions/download-artifact@v4
+        with:
+          name: q2-c5-shared5
+          path: inputs/q2_18606_anchor
+          github-token: ${{ github.token }}
+          repository: HaochenLv/Math_exercise_1
+          run-id: 34359410452
+      - name: Run C6 global route-pool master ${{ matrix.label }}
+        run: |
+          python experiments/run_q2_c6_global_route_pool.py \
+            --anchor-routes inputs/q2_18606_anchor/q2-routes.csv \
+            --anchor-assignments inputs/q2_18606_anchor/q2-assignments.csv \
+            --output-dir outputs/q2/c6_${{ matrix.label }} \
+            --cluster-budget ${{ matrix.cluster_budget }} \
+            --max-routes ${{ matrix.max_routes }} \
+            --master-time-limit ${{ matrix.master_time }} \
+            --max-copies 25 \
+            --seed ${{ matrix.seed }} \
+            --expected-anchor-minutes 18606 \
+            --expected-anchor-flights 104
+      - name: Upload C6 outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: q2-c6-${{ matrix.label }}
+          path: outputs/q2/c6_${{ matrix.label }}
+          if-no-files-found: error
