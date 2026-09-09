@@ -1,9 +1,6 @@
 name: q2-b3-pair-recombination
 
 on:
-  push:
-    paths:
-      - ".github/workflows/q2-b3.yml"
   workflow_dispatch:
 
 permissions:
