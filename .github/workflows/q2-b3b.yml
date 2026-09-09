@@ -1,6 +1,9 @@
 name: q2-b3b-residual-main-recombination
 
 on:
+  push:
+    paths:
+      - ".github/workflows/q2-b3b.yml"
   workflow_dispatch:
 
 permissions:
@@ -10,7 +13,7 @@ permissions:
 jobs:
   b3b:
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -28,22 +31,22 @@ jobs:
           github-token: ${{ github.token }}
           repository: HaochenLv/Math_exercise_1
           run-id: 34131373295
-      - name: Run Q2 B3B residual x main exact recombination
+      - name: Run Q2 B3B extended residual x main exact recombination
         run: |
           python experiments/run_q2_b3b_residual_main.py \
             --q1-routes inputs/q1_v10_anchor/q1-routes.csv \
             --q1-assignments inputs/q1_v10_anchor/q1-assignments.csv \
-            --output-dir outputs/q2/b3b_residual_main \
+            --output-dir outputs/q2/b3b_residual_main_extended \
             --packing-time-limit 30 \
             --b3a-max-iterations 40 \
             --main-neighbor-count 10 \
             --max-union-facilities 7 \
             --cp-time-limit 1.0 \
-            --max-iterations 15 \
+            --max-iterations 40 \
             --tail-max-hosts-per-donor 32
       - name: Upload B3B outputs
         uses: actions/upload-artifact@v4
         with:
-          name: q2-b3b-residual-main-recombination
-          path: outputs/q2/b3b_residual_main
+          name: q2-b3b-residual-main-recombination-extended
+          path: outputs/q2/b3b_residual_main_extended
           if-no-files-found: error
