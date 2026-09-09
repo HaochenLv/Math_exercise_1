@@ -1,6 +1,9 @@
 name: q2-b3-pair-recombination
 
 on:
+  push:
+    paths:
+      - ".github/workflows/q2-b3.yml"
   workflow_dispatch:
 
 permissions:
@@ -10,7 +13,7 @@ permissions:
 jobs:
   b3:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -28,7 +31,7 @@ jobs:
           github-token: ${{ github.token }}
           repository: HaochenLv/Math_exercise_1
           run-id: 34131373295
-      - name: Run Q2 B3A exact residual pair recombination
+      - name: Run Q2 B3A extended residual pair recombination
         run: |
           python experiments/run_q2_b3_pair_recombination.py \
             --q1-routes inputs/q1_v10_anchor/q1-routes.csv \
@@ -38,7 +41,7 @@ jobs:
             --neighbor-count 8 \
             --max-union-facilities 6 \
             --cp-time-limit 0.75 \
-            --max-iterations 12 \
+            --max-iterations 40 \
             --tail-max-hosts-per-donor 32
       - name: Upload B3 outputs
         uses: actions/upload-artifact@v4
